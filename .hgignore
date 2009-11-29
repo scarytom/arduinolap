@@ -1,0 +1,11 @@
+# use glob syntax.
+syntax: glob
+*.o
+*.a
+*.eep
+*.elf
+*.hex
+
+# switch to regexp syntax.
+syntax: regexp
+.*[\\\/]applet[\\\/].*
