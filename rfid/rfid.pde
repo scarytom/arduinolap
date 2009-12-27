@@ -8,11 +8,11 @@ const byte ASCII_ETX = 0x03; // End of text
 const byte ASCII_CR  = 0x0D; // Carriage Return
 const byte ASCII_LF  = 0x0A; // Line feed
 
-const int  PIN_LED_WARNING = 8;
-const int  PIN_LED_STOP = 7;
-const int  PIN_DISPLAY_DATA = 2;
-const int  PIN_DISPLAY_CLOCK = 3;
-
+const int  PIN_LED_STOP = 2;
+const int  PIN_LED_WARNING = 3;
+const int  PIN_DISPLAY_LATCH = 5;   // Green
+const int  PIN_DISPLAY_DATA = 6;   // Blue
+const int  PIN_DISPLAY_CLOCK = 7;  // Yellow
 
 // Size of an RFID number in bytes.
 const size_t RFID_BYTES = 5;
@@ -35,6 +35,11 @@ void setup() {
   Serial.begin(9600);
   pinMode(PIN_LED_WARNING, OUTPUT);
   pinMode(PIN_LED_STOP, OUTPUT);
+  pinMode(PIN_DISPLAY_DATA, OUTPUT);
+  pinMode(PIN_DISPLAY_LATCH, OUTPUT);
+  pinMode(PIN_DISPLAY_CLOCK, OUTPUT);
+  
+  clearDisplay();
 }
 
 void loop() {
@@ -199,6 +204,9 @@ void processCardArrival(byte cardId, unsigned long timeMillis) {
 
   // Record the new lap times.
   for (byte lapNo = lapCounts[cardId]; lapNo < lapCounts[cardId] + lapCount; lapNo++) {
+    if (lapNo >= TARGET_LAP_COUNT) {
+      break;
+    }
     lapTimesTenths[cardId][lapNo] = (lapTimeMillis / lapCount) / 100;
   }
 
@@ -217,7 +225,7 @@ void processCardArrival(byte cardId, unsigned long timeMillis) {
 }
 
 void displayLapNumber(byte lapNumber) {
-  static const byte displaycodes[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
+  static const byte displayCodes[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
   
   if (lapNumber > 99) {
     return;
@@ -225,10 +233,19 @@ void displayLapNumber(byte lapNumber) {
   
   byte rightDigit = lapNumber % 10;
   byte leftDigit = (lapNumber - rightDigit) / 10;
-  
-  shiftOut(PIN_DISPLAY_DATA, PIN_DISPLAY_CLOCK, MSBFIRST, displayCodes[leftDigit]);
-  shiftOut(PIN_DISPLAY_DATA, PIN_DISPLAY_CLOCK, MSBFIRST, displayCodes[rightDigit]);
-  
-  return;
+
+  displayBytes(displayCodes[leftDigit], displayCodes[rightDigit]);
+  Serial.println(lapNumber, DEC);
+}
+
+void clearDisplay() {
+  displayBytes(0, 0);
+}
+
+void displayBytes(byte leftByte, byte rightByte) {
+  digitalWrite(PIN_DISPLAY_LATCH, LOW);
+  shiftOut(PIN_DISPLAY_DATA, PIN_DISPLAY_CLOCK, MSBFIRST, rightByte);
+  shiftOut(PIN_DISPLAY_DATA, PIN_DISPLAY_CLOCK, MSBFIRST, leftByte);
+  digitalWrite(PIN_DISPLAY_LATCH, HIGH);
 }
 
