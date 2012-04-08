@@ -1,17 +1,13 @@
-//**************************************************************//
-//  Name    : shiftOutCode, Dual Binary Counters                 //
-//  Author  : Carlyn Maw, Tom Igoe                               //
-//  Date    : 25 Oct, 2006                                       //
-//  Version : 1.0                                                //
-//  Notes   : Code for using a 74HC595 Shift Register            //
-//          : to count from 0 to 255                             //
-//**************************************************************//
+/* 
+ * Use a 74HC595 Shift Register to count from 0 to 99
+ * on a dual digit display.
+ *
+ * (c) Tom Denley 2009
+ */
 
 const int  PIN_DISPLAY_LATCH = 8;
 const int  PIN_DISPLAY_DATA = 11;
 const int  PIN_DISPLAY_CLOCK = 12;
-
-
 
 void setup() {
   pinMode(PIN_DISPLAY_DATA, OUTPUT);
